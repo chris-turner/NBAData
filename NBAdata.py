@@ -5,35 +5,11 @@ from nba_api.stats.endpoints import teamgamelog
 from nba_api.stats.endpoints import leaguegamelog
 from nba_api.stats.library.parameters import Season
 from nba_api.stats.library.parameters import SeasonType
-from nba_api.stats.endpoints import playbyplay
+from nba_api.stats.endpoints import playbyplayv2
 from pandas import DataFrame
 import pandas as pd
 import pyodbc as pyodbc
-
-# cursor.execute(
-#conn.commit()
-
-#glDf.to_excel("teamdl.xlsx")       
-
-# gamefinder = leaguegamefinder.LeagueGameFinder(team_id_nullable=team["id"],
-#                     season_nullable=Season.default,
-#                     season_type_nullable=SeasonType.regular)
-# gameLog = teamgamelog.TeamGameLog(team_id = teamsList[0]["id"])
-# games_dict = gamefinder.get_normalized_dict()
-# games = games_dict["LeagueGameFinderResults"]
-# df = playbyplay.PlayByPlay(games[1]["GAME_ID"]).get_data_frames()[0]
-
-#gl.to_excel("output2.xlsx")  
-
-#for team in teamsList :
-#    gamefinder = leaguegamefinder.LeagueGameFinder(team_id_nullable=team["id"],
-#                            season_nullable=Season.default,
-#                            season_type_nullable=SeasonType.regular)  
-#    games_dict = gamefinder.get_normalized_dict()
-#    games = games_dict["LeagueGameFinderResults"]
-#    for game in games:
-#        df = playbyplay.PlayByPlay(game["GAME_ID"]).get_data_frames()[0]
-#        print(df.head()) #just looking at the head of the data
+import time
         
 def insertTeamsToDB():
     teamsList = teams.get_teams()
@@ -106,5 +82,58 @@ def getSQLDataInDF(sqlQuery):
 def getMaxGameDate():
     return getSQLDataInDF('select max(gameDate) as maxDate from nba_game').iloc[0]['maxDate']
 
-maxDate = getMaxGameDate()
-getGameData(maxDate)
+#maxDate = getMaxGameDate()
+#getGameData(maxDate)
+
+gameIDsDf = getSQLDataInDF("select gameID from nba_game")
+x = 0
+for i, gameIDRow in gameIDsDf.iterrows():
+    if x < 15:
+        x += 1
+        pbpDf = playbyplayv2.PlayByPlayV2(gameIDRow['gameID']).get_data_frames()[0]
+        for x, pbpRow in pbpDf.iterrows():
+            runAndCommitSQL("insert into NBA_game_play_by_play (GAME_ID, EVENTNUM, EVENTMSGTYPE, EVENTMSGACTIONTYPE, PERIOD, WCTIMESTRING, PCTIMESTRING, HOMEDESCRIPTION, NEUTRALDESCRIPTION, VISITORDESCRIPTION, SCORE,"+
+            "SCOREMARGIN, PERSON1TYPE, PLAYER1_ID, PLAYER1_NAME, PLAYER1_TEAM_ID, PLAYER1_TEAM_CITY, PLAYER1_TEAM_NICKNAME, PLAYER1_TEAM_ABBREVIATION, PERSON2TYPE, PLAYER2_ID, PLAYER2_NAME, PLAYER2_TEAM_ID, "+
+            "PLAYER2_TEAM_CITY, PLAYER2_TEAM_NICKNAME, PLAYER2_TEAM_ABBREVIATION, PERSON3TYPE, PLAYER3_ID, PLAYER3_NAME, PLAYER3_TEAM_ID, PLAYER3_TEAM_CITY," + 
+            "PLAYER3_TEAM_NICKNAME, PLAYER3_TEAM_ABBREVIATION, VIDEO_AVAILABLE_FLAG) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');"
+            % (pbpRow["GAME_ID"],pbpRow["EVENTNUM"], pbpRow["EVENTMSGTYPE"], pbpRow["EVENTMSGACTIONTYPE"], pbpRow["PERIOD"], pbpRow["WCTIMESTRING"], pbpRow["PCTIMESTRING"], 
+            pbpRow["HOMEDESCRIPTION"], pbpRow["NEUTRALDESCRIPTION"], pbpRow["VISITORDESCRIPTION"], pbpRow["SCORE"], pbpRow["SCOREMARGIN"], pbpRow["PERSON1TYPE"], pbpRow["PLAYER1_ID"], 
+            pbpRow["PLAYER1_NAME"], pbpRow["PLAYER1_TEAM_ID"], pbpRow["PLAYER1_TEAM_CITY"], pbpRow["PLAYER1_TEAM_NICKNAME"], pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PERSON2TYPE"],
+             pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_NAME"], pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], 
+             pbpRow["PERSON3TYPE"], pbpRow["PLAYER3_ID"], pbpRow["PLAYER3_NAME"], pbpRow["PLAYER3_TEAM_ID"], pbpRow["PLAYER3_TEAM_CITY"], pbpRow["PLAYER3_TEAM_NICKNAME"], pbpRow["PLAYER3_TEAM_ABBREVIATION"], 
+             pbpRow["VIDEO_AVAILABLE_FLAG"]))
+            print("inserted row for gameID: pbpRow['GAME_ID']")
+    else:
+        x=0
+        time.sleep(600) #wait 10 mins to avoid timeout
+        
+        
+    
+
+
+
+# cursor.execute(
+#conn.commit()
+
+#glDf.to_excel("//exceloutput//teamdl.xlsx")       
+
+# gamefinder = leaguegamefinder.LeagueGameFinder(team_id_nullable=teamsList[0]["id"],
+#                     season_nullable=Season.default,
+#                     season_type_nullable=SeasonType.regular)
+# gameLog = teamgamelog.TeamGameLog(team_id = teamsList[0]["id"])
+# games_dict = gamefinder.get_normalized_dict()
+# games = games_dict["LeagueGameFinderResults"]#games[1]["GAME_ID"]
+
+
+#df.to_excel("C:\\Source\\Other\\NBAData\\exceloutput\\pbp.xlsx")  
+#gl.to_excel("//exceloutput//output2.xlsx")  
+
+#for team in teamsList :
+#    gamefinder = leaguegamefinder.LeagueGameFinder(team_id_nullable=team["id"],
+#                            season_nullable=Season.default,
+#                            season_type_nullable=SeasonType.regular)  
+#    games_dict = gamefinder.get_normalized_dict()
+#    games = games_dict["LeagueGameFinderResults"]
+#    for game in games:
+#        df = playbyplay.PlayByPlay(game["GAME_ID"]).get_data_frames()[0]
+#        print(df.head()) #just looking at the head of the data
