@@ -59,7 +59,8 @@ def getGameData(dateFrom):
             % (gameRow['GAME_ID'],gameRow["TEAM_ID"],gameRow["GAME_DATE"],gameRow["SEASON_ID"] ))
 
 def runAndCommitSQL(sqlStatement):
-    server = 'IHMNYC01CXT\\SQLEXPRESS' 
+    #server = 'IHMNYC01CXT\\SQLEXPRESS' 
+    server = "DESKTOP-HOD0O5L\\SQLEXPRESS"
     database = 'TestDB' 
     #username = 'myusername' 
     #password = 'mypassword' 
@@ -70,7 +71,8 @@ def runAndCommitSQL(sqlStatement):
     conn.commit()
 
 def getSQLDataInDF(sqlQuery):
-    server = 'IHMNYC01CXT\\SQLEXPRESS' 
+    #server = 'IHMNYC01CXT\\SQLEXPRESS'
+    server = "DESKTOP-HOD0O5L\\SQLEXPRESS" 
     database = 'TestDB' 
     #username = 'myusername' 
     #password = 'mypassword' 
@@ -82,6 +84,7 @@ def getSQLDataInDF(sqlQuery):
 def getMaxGameDate():
     return getSQLDataInDF('select max(gameDate) as maxDate from nba_game').iloc[0]['maxDate']
 
+
 #maxDate = getMaxGameDate()
 #getGameData(maxDate)
 
@@ -91,20 +94,39 @@ for i, gameIDRow in gameIDsDf.iterrows():
     if x < 15:
         x += 1
         pbpDf = playbyplayv2.PlayByPlayV2(gameIDRow['gameID']).get_data_frames()[0]
-        for x, pbpRow in pbpDf.iterrows():
-            runAndCommitSQL("insert into NBA_game_play_by_play (GAME_ID, EVENTNUM, EVENTMSGTYPE, EVENTMSGACTIONTYPE, PERIOD, WCTIMESTRING, PCTIMESTRING, HOMEDESCRIPTION, NEUTRALDESCRIPTION, VISITORDESCRIPTION, SCORE,"+
-            "SCOREMARGIN, PERSON1TYPE, PLAYER1_ID, PLAYER1_NAME, PLAYER1_TEAM_ID, PLAYER1_TEAM_CITY, PLAYER1_TEAM_NICKNAME, PLAYER1_TEAM_ABBREVIATION, PERSON2TYPE, PLAYER2_ID, PLAYER2_NAME, PLAYER2_TEAM_ID, "+
+        for a, pbpRow in pbpDf.iterrows():
+            pbpSql = ("insert into NBA_game_play_by_play (GAME_ID, EVENTNUM, EVENTMSGTYPE, EVENTMSGACTIONTYPE, PERIOD, WCTIMESTRING, PCTIMESTRING, HOMEDESCRIPTION, " + 
+            "NEUTRALDESCRIPTION, VISITORDESCRIPTION, SCORE, SCOREMARGIN, PERSON1TYPE, PLAYER1_ID, PLAYER1_NAME, PLAYER1_TEAM_ID, PLAYER1_TEAM_CITY, " + 
+            "PLAYER1_TEAM_NICKNAME, PLAYER1_TEAM_ABBREVIATION, PERSON2TYPE, PLAYER2_ID, PLAYER2_NAME, PLAYER2_TEAM_ID, "+
             "PLAYER2_TEAM_CITY, PLAYER2_TEAM_NICKNAME, PLAYER2_TEAM_ABBREVIATION, PERSON3TYPE, PLAYER3_ID, PLAYER3_NAME, PLAYER3_TEAM_ID, PLAYER3_TEAM_CITY," + 
-            "PLAYER3_TEAM_NICKNAME, PLAYER3_TEAM_ABBREVIATION, VIDEO_AVAILABLE_FLAG) values ('%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s');"
-            % (pbpRow["GAME_ID"],pbpRow["EVENTNUM"], pbpRow["EVENTMSGTYPE"], pbpRow["EVENTMSGACTIONTYPE"], pbpRow["PERIOD"], pbpRow["WCTIMESTRING"], pbpRow["PCTIMESTRING"], 
-            pbpRow["HOMEDESCRIPTION"], pbpRow["NEUTRALDESCRIPTION"], pbpRow["VISITORDESCRIPTION"], pbpRow["SCORE"], pbpRow["SCOREMARGIN"], pbpRow["PERSON1TYPE"], pbpRow["PLAYER1_ID"], 
-            pbpRow["PLAYER1_NAME"], pbpRow["PLAYER1_TEAM_ID"], pbpRow["PLAYER1_TEAM_CITY"], pbpRow["PLAYER1_TEAM_NICKNAME"], pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PERSON2TYPE"],
-             pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_NAME"], pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], 
-             pbpRow["PERSON3TYPE"], pbpRow["PLAYER3_ID"], pbpRow["PLAYER3_NAME"], pbpRow["PLAYER3_TEAM_ID"], pbpRow["PLAYER3_TEAM_CITY"], pbpRow["PLAYER3_TEAM_NICKNAME"], pbpRow["PLAYER3_TEAM_ABBREVIATION"], 
-             pbpRow["VIDEO_AVAILABLE_FLAG"]))
-            print("inserted row for gameID: pbpRow['GAME_ID']")
+            "PLAYER3_TEAM_NICKNAME, PLAYER3_TEAM_ABBREVIATION, VIDEO_AVAILABLE_FLAG) values(CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END);"
+              % (pbpRow["GAME_ID"],pbpRow["GAME_ID"],pbpRow["EVENTNUM"],pbpRow["EVENTNUM"], pbpRow["EVENTMSGTYPE"], 
+              pbpRow["EVENTMSGTYPE"],pbpRow["EVENTMSGACTIONTYPE"],pbpRow["EVENTMSGACTIONTYPE"], pbpRow["PERIOD"], pbpRow["PERIOD"],
+              pbpRow["WCTIMESTRING"], pbpRow["WCTIMESTRING"],pbpRow["PCTIMESTRING"], pbpRow["PCTIMESTRING"],
+              str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), 
+              str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"),  str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"),
+              str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"), str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"),
+              pbpRow["SCORE"],pbpRow["SCORE"], pbpRow["SCOREMARGIN"], pbpRow["SCOREMARGIN"], pbpRow["PERSON1TYPE"],
+              pbpRow["PERSON1TYPE"], pbpRow["PLAYER1_ID"], pbpRow["PLAYER1_ID"],  str(pbpRow["PLAYER1_NAME"]).replace("'","''"),
+            str(pbpRow["PLAYER1_NAME"]).replace("'","''"),  pbpRow["PLAYER1_TEAM_ID"],pbpRow["PLAYER1_TEAM_ID"],  pbpRow["PLAYER1_TEAM_CITY"],
+            pbpRow["PLAYER1_TEAM_CITY"],pbpRow["PLAYER1_TEAM_NICKNAME"], pbpRow["PLAYER1_TEAM_NICKNAME"],
+             pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PERSON2TYPE"],pbpRow["PERSON2TYPE"],
+            pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_ID"], str(pbpRow["PLAYER2_NAME"]).replace("'","''"), str(pbpRow["PLAYER2_NAME"]).replace("'","''"), 
+            pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], 
+            pbpRow["PERSON3TYPE"], pbpRow["PERSON3TYPE"], pbpRow["PLAYER3_ID"], pbpRow["PLAYER3_ID"], 
+            str(pbpRow["PLAYER3_NAME"]).replace("'","''"), str(pbpRow["PLAYER3_NAME"]).replace("'","''"), 
+            pbpRow["PLAYER3_TEAM_ID"],pbpRow["PLAYER3_TEAM_ID"], pbpRow["PLAYER3_TEAM_CITY"],pbpRow["PLAYER3_TEAM_CITY"],  pbpRow["PLAYER3_TEAM_NICKNAME"],
+            pbpRow["PLAYER3_TEAM_NICKNAME"],  pbpRow["PLAYER3_TEAM_ABBREVIATION"], pbpRow["PLAYER3_TEAM_ABBREVIATION"],  pbpRow["VIDEO_AVAILABLE_FLAG"], pbpRow["VIDEO_AVAILABLE_FLAG"]))
+            try:
+                runAndCommitSQL(pbpSql)
+            except:
+                print(pbpSql) 
+                #return
+                exit()
+        print(str(x) + ": " + gameIDRow['gameID']) 
     else:
         x=0
+        print("wait 10 mins to avoid timeout")
         time.sleep(600) #wait 10 mins to avoid timeout
         
         
