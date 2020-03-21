@@ -88,7 +88,7 @@ def getMaxGameDate():
 #maxDate = getMaxGameDate()
 #getGameData(maxDate)
 
-gameIDsDf = getSQLDataInDF("select gameID from nba_game")
+gameIDsDf = getSQLDataInDF("select distinct gameID from NBA_game g left  join NBA_game_play_by_play p on p.GAME_ID = g.gameID where p.GAME_ID is null")
 x = 0
 for i, gameIDRow in gameIDsDf.iterrows():
     if x < 15:
@@ -99,24 +99,42 @@ for i, gameIDRow in gameIDsDf.iterrows():
             "NEUTRALDESCRIPTION, VISITORDESCRIPTION, SCORE, SCOREMARGIN, PERSON1TYPE, PLAYER1_ID, PLAYER1_NAME, PLAYER1_TEAM_ID, PLAYER1_TEAM_CITY, " + 
             "PLAYER1_TEAM_NICKNAME, PLAYER1_TEAM_ABBREVIATION, PERSON2TYPE, PLAYER2_ID, PLAYER2_NAME, PLAYER2_TEAM_ID, "+
             "PLAYER2_TEAM_CITY, PLAYER2_TEAM_NICKNAME, PLAYER2_TEAM_ABBREVIATION, PERSON3TYPE, PLAYER3_ID, PLAYER3_NAME, PLAYER3_TEAM_ID, PLAYER3_TEAM_CITY," + 
-            "PLAYER3_TEAM_NICKNAME, PLAYER3_TEAM_ABBREVIATION, VIDEO_AVAILABLE_FLAG) values(CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' THEN NULL ELSE '%s' END);"
-              % (pbpRow["GAME_ID"],pbpRow["GAME_ID"],pbpRow["EVENTNUM"],pbpRow["EVENTNUM"], pbpRow["EVENTMSGTYPE"], 
-              pbpRow["EVENTMSGTYPE"],pbpRow["EVENTMSGACTIONTYPE"],pbpRow["EVENTMSGACTIONTYPE"], pbpRow["PERIOD"], pbpRow["PERIOD"],
-              pbpRow["WCTIMESTRING"], pbpRow["WCTIMESTRING"],pbpRow["PCTIMESTRING"], pbpRow["PCTIMESTRING"],
-              str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), 
-              str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"),  str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"),
-              str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"), str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"),
-              pbpRow["SCORE"],pbpRow["SCORE"], pbpRow["SCOREMARGIN"], pbpRow["SCOREMARGIN"], pbpRow["PERSON1TYPE"],
-              pbpRow["PERSON1TYPE"], pbpRow["PLAYER1_ID"], pbpRow["PLAYER1_ID"],  str(pbpRow["PLAYER1_NAME"]).replace("'","''"),
-            str(pbpRow["PLAYER1_NAME"]).replace("'","''"),  pbpRow["PLAYER1_TEAM_ID"],pbpRow["PLAYER1_TEAM_ID"],  pbpRow["PLAYER1_TEAM_CITY"],
-            pbpRow["PLAYER1_TEAM_CITY"],pbpRow["PLAYER1_TEAM_NICKNAME"], pbpRow["PLAYER1_TEAM_NICKNAME"],
-             pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PERSON2TYPE"],pbpRow["PERSON2TYPE"],
-            pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_ID"], str(pbpRow["PLAYER2_NAME"]).replace("'","''"), str(pbpRow["PLAYER2_NAME"]).replace("'","''"), 
-            pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], 
-            pbpRow["PERSON3TYPE"], pbpRow["PERSON3TYPE"], pbpRow["PLAYER3_ID"], pbpRow["PLAYER3_ID"], 
-            str(pbpRow["PLAYER3_NAME"]).replace("'","''"), str(pbpRow["PLAYER3_NAME"]).replace("'","''"), 
-            pbpRow["PLAYER3_TEAM_ID"],pbpRow["PLAYER3_TEAM_ID"], pbpRow["PLAYER3_TEAM_CITY"],pbpRow["PLAYER3_TEAM_CITY"],  pbpRow["PLAYER3_TEAM_NICKNAME"],
-            pbpRow["PLAYER3_TEAM_NICKNAME"],  pbpRow["PLAYER3_TEAM_ABBREVIATION"], pbpRow["PLAYER3_TEAM_ABBREVIATION"],  pbpRow["VIDEO_AVAILABLE_FLAG"], pbpRow["VIDEO_AVAILABLE_FLAG"]))
+            "PLAYER3_TEAM_NICKNAME, PLAYER3_TEAM_ABBREVIATION, VIDEO_AVAILABLE_FLAG) " +   
+            "values(CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END, CASE WHEN '%s' = 'None' OR '%s' = 'nan' THEN NULL ELSE '%s' END);" 
+            % (pbpRow["GAME_ID"],pbpRow["GAME_ID"],pbpRow["GAME_ID"],
+              pbpRow["EVENTNUM"],pbpRow["EVENTNUM"],pbpRow["EVENTNUM"], 
+              pbpRow["EVENTMSGTYPE"],  pbpRow["EVENTMSGTYPE"], pbpRow["EVENTMSGTYPE"],
+              pbpRow["EVENTMSGACTIONTYPE"], pbpRow["EVENTMSGACTIONTYPE"],pbpRow["EVENTMSGACTIONTYPE"], 
+              pbpRow["PERIOD"], pbpRow["PERIOD"], pbpRow["PERIOD"],
+              pbpRow["WCTIMESTRING"], pbpRow["WCTIMESTRING"], pbpRow["WCTIMESTRING"],
+              pbpRow["PCTIMESTRING"],pbpRow["PCTIMESTRING"], pbpRow["PCTIMESTRING"],
+              str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), str(pbpRow["HOMEDESCRIPTION"]).replace("'","''"), 
+              str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"), str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"), str(pbpRow["NEUTRALDESCRIPTION"]).replace("'","''"),
+              str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"), str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"), str(pbpRow["VISITORDESCRIPTION"]).replace("'","''"),
+              pbpRow["SCORE"],pbpRow["SCORE"],pbpRow["SCORE"], 
+              pbpRow["SCOREMARGIN"], pbpRow["SCOREMARGIN"], pbpRow["SCOREMARGIN"], 
+              pbpRow["PERSON1TYPE"],pbpRow["PERSON1TYPE"], pbpRow["PERSON1TYPE"],
+              pbpRow["PLAYER1_ID"], pbpRow["PLAYER1_ID"],pbpRow["PLAYER1_ID"],  
+              str(pbpRow["PLAYER1_NAME"]).replace("'","''"), str(pbpRow["PLAYER1_NAME"]).replace("'","''"), str(pbpRow["PLAYER1_NAME"]).replace("'","''"), 
+            pbpRow["PLAYER1_TEAM_ID"], pbpRow["PLAYER1_TEAM_ID"],pbpRow["PLAYER1_TEAM_ID"],  
+            pbpRow["PLAYER1_TEAM_CITY"], pbpRow["PLAYER1_TEAM_CITY"],pbpRow["PLAYER1_TEAM_CITY"],
+            pbpRow["PLAYER1_TEAM_NICKNAME"], pbpRow["PLAYER1_TEAM_NICKNAME"],pbpRow["PLAYER1_TEAM_NICKNAME"],
+             pbpRow["PLAYER1_TEAM_ABBREVIATION"],pbpRow["PLAYER1_TEAM_ABBREVIATION"], pbpRow["PLAYER1_TEAM_ABBREVIATION"], 
+             pbpRow["PERSON2TYPE"],pbpRow["PERSON2TYPE"], pbpRow["PERSON2TYPE"],
+            pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_ID"], pbpRow["PLAYER2_ID"], 
+            str(pbpRow["PLAYER2_NAME"]).replace("'","''"),str(pbpRow["PLAYER2_NAME"]).replace("'","''"), str(pbpRow["PLAYER2_NAME"]).replace("'","''"), 
+            pbpRow["PLAYER2_TEAM_ID"], pbpRow["PLAYER2_TEAM_ID"],pbpRow["PLAYER2_TEAM_ID"], 
+            pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_CITY"], pbpRow["PLAYER2_TEAM_CITY"], 
+			pbpRow["PLAYER2_TEAM_NICKNAME"], pbpRow["PLAYER2_TEAM_NICKNAME"],pbpRow["PLAYER2_TEAM_NICKNAME"], 
+            pbpRow["PLAYER2_TEAM_ABBREVIATION"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], pbpRow["PLAYER2_TEAM_ABBREVIATION"], 
+            pbpRow["PERSON3TYPE"], pbpRow["PERSON3TYPE"],pbpRow["PERSON3TYPE"], 
+            pbpRow["PLAYER3_ID"],pbpRow["PLAYER3_ID"], pbpRow["PLAYER3_ID"], 
+            str(pbpRow["PLAYER3_NAME"]).replace("'","''"), str(pbpRow["PLAYER3_NAME"]).replace("'","''"),str(pbpRow["PLAYER3_NAME"]).replace("'","''"), 
+            pbpRow["PLAYER3_TEAM_ID"],pbpRow["PLAYER3_TEAM_ID"],pbpRow["PLAYER3_TEAM_ID"], 
+            pbpRow["PLAYER3_TEAM_CITY"], pbpRow["PLAYER3_TEAM_CITY"],pbpRow["PLAYER3_TEAM_CITY"],  
+            pbpRow["PLAYER3_TEAM_NICKNAME"],  pbpRow["PLAYER3_TEAM_NICKNAME"], pbpRow["PLAYER3_TEAM_NICKNAME"],  
+            pbpRow["PLAYER3_TEAM_ABBREVIATION"],  pbpRow["PLAYER3_TEAM_ABBREVIATION"], pbpRow["PLAYER3_TEAM_ABBREVIATION"],  
+            pbpRow["VIDEO_AVAILABLE_FLAG"], pbpRow["VIDEO_AVAILABLE_FLAG"], pbpRow["VIDEO_AVAILABLE_FLAG"]))
             try:
                 runAndCommitSQL(pbpSql)
             except:
