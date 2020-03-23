@@ -144,11 +144,13 @@ def getBoxScoreData():
             print("wait 10 mins to avoid timeout")
             time.sleep(600) #wait 10 mins to avoid timeout
 
-maxDate = getMaxGameDate()
-getGameData(maxDate)
-getBoxScoreData()
+def loadLatestGamesAndBoxScores():
+    maxDate = getMaxGameDate()
+    getGameData(maxDate)
+    getBoxScoreData()
 
-        
+
+loadLatestGamesAndBoxScores()
         
     
 
