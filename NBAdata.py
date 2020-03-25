@@ -2,6 +2,7 @@ from nba_api.stats.static import players
 from nba_api.stats.static import teams
 from nba_api.stats.endpoints import leaguegamefinder
 from nba_api.stats.endpoints import teamgamelog
+from nba_api.stats.endpoints import leaguedashlineups
 from nba_api.stats.endpoints import leaguegamelog
 from nba_api.stats.library.parameters import Season
 from nba_api.stats.library.parameters import SeasonType
@@ -148,7 +149,53 @@ def loadLatestGamesAndBoxScores():
     maxDate = getMaxGameDate()
     getGameData(maxDate)
     getBoxScoreData()
+    runAndCommitSQL("UPDATE [NBA_game_play_by_play] SET PLAYER1_TEAM_ID = SUBSTRING(PLAYER1_TEAM_ID, 0, (LEN(PLAYER1_TEAM_ID) - 1)), PLAYER2_TEAM_ID = SUBSTRING(PLAYER2_TEAM_ID, 0, (LEN(PLAYER2_TEAM_ID) - 1)),PLAYER3_TEAM_ID = SUBSTRING(PLAYER3_TEAM_ID, 0, (LEN(PLAYER3_TEAM_ID) - 1))")
+    loadJumpballData(maxDate)
 
+def loadJumpballData(maxDate):
+    jbSql = "insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip)"+
+    "select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0"+
+    "from NBA_game_play_by_play pbp "+
+    "inner join NBA_game g on pbp.GAME_ID = g.gameID"+
+    "where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') "+
+    "and PERIOD = 1 and CAST(PCTIMESTRING as time) <= '11:50'  "+
+    "and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and "+
+    "(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null) "+
+    "and PLAYER3_NAME is not null and g.gameDate > '" + maxDate + "';"+
+    "insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip) "+
+    "select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0 "+
+    "from NBA_game_play_by_play pbp"+
+    "inner join NBA_game g on pbp.GAME_ID = g.gameID "+
+    "where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') "+
+    "and PERIOD = 1 and CAST(PCTIMESTRING as time) > '11:50'  "+
+    "and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and "+
+    "(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null) "+
+    "and PLAYER3_NAME is not null and g.gameDate > '" + maxDate + "'; "+
+    "insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip) "+
+    "select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0 "+
+    "from NBA_game_play_by_play pbp "+
+    "inner join NBA_game g on pbp.GAME_ID = g.gameID "+
+    "where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') "+
+    "and PERIOD != 1 "+
+    "and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and "+
+    "(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null) "+
+    "and PLAYER3_NAME is not null and g.gameDate > '" + maxDate + "';
+    runAndCommitSQL(jbSql)
+    winlossSQL = "update NBA_jumpball "+
+    "set winnerID = pbp.player1_id, "+
+    "loserID = pbp.PLAYER2_ID "+
+    "from "+
+    "NBA_jumpball j inner join "+
+    "NBA_game_play_by_play pbp on j.gameID = pbp.game_Id and j.eventnum = pbp.eventnum "+
+    "where pbp.player1_team_id = pbp.player3_team_id and loserID is null; "+
+    "update NBA_jumpball "+
+    "set winnerID = pbp.player2_id, "+
+    "loserID = pbp.PLAYER1_ID "+
+    "from "+
+    "NBA_jumpball j inner join "+
+    "NBA_game_play_by_play pbp on j.gameID = pbp.game_Id and j.eventnum = pbp.eventnum "+
+    "where pbp.player2_team_id = pbp.player3_team_id and winnerID is null; "
+    unAndCommitSQL(winlossSQL)
 
 loadLatestGamesAndBoxScores()
         
