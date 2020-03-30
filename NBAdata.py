@@ -60,7 +60,6 @@ def getGameData(dateFrom):
             % (gameRow['GAME_ID'],gameRow["TEAM_ID"],gameRow["GAME_DATE"],gameRow["SEASON_ID"] ))
 
 def runAndCommitSQL(sqlStatement):
-    #server = 'IHMNYC01CXT\\SQLEXPRESS' 
     server = "DESKTOP-HOD0O5L\\SQLEXPRESS"
     database = 'TestDB' 
     #username = 'myusername' 
@@ -72,7 +71,6 @@ def runAndCommitSQL(sqlStatement):
     conn.commit()
 
 def getSQLDataInDF(sqlQuery):
-    #server = 'IHMNYC01CXT\\SQLEXPRESS'
     server = "DESKTOP-HOD0O5L\\SQLEXPRESS" 
     database = 'TestDB' 
     #username = 'myusername' 
@@ -195,7 +193,7 @@ def loadJumpballData(maxDate):
     "NBA_jumpball j inner join "+
     "NBA_game_play_by_play pbp on j.gameID = pbp.game_Id and j.eventnum = pbp.eventnum "+
     "where pbp.player2_team_id = pbp.player3_team_id and winnerID is null; "
-    unAndCommitSQL(winlossSQL)
+    runAndCommitSQL(winlossSQL)
 
 loadLatestGamesAndBoxScores()
         
