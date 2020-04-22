@@ -13,11 +13,4 @@ Current statistics being pulled from the raw data:
 - Last shot attempt of game including free throws
 - First made shot of the game including free throws
 - Last made FG of the game
-- First made FG of the game
-- Last made FG of the game
-- First FG attempt of game
-- Last FG attempt of game
-- First shot attempt of game including free throws
-- Last shot attempt of game including free throws
-- First made shot of the game including free throws
-- Last made shot of the game including free throws
+- Last made shot of the game including freethrows
