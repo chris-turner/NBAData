@@ -153,7 +153,7 @@ inner join
    inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
   order by gameDate
 
-  -- Last made FG of the game
+  -- Last made shot of the game including freethrows
 select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
 CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
 CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
