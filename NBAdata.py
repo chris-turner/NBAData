@@ -61,9 +61,9 @@ def getGameData(dateFrom):
 
 def runAndCommitSQL(sqlStatement):
     server = "DESKTOP-HOD0O5L\\SQLEXPRESS"
-    database = 'TestDB' 
-    #username = 'myusername' 
-    #password = 'mypassword' 
+    database = 'NBADB' 
+    #username = '' 
+    #password = '' 
     #conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
     conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';Trusted_Connection=yes;')
     cursor = conn.cursor()
@@ -72,9 +72,9 @@ def runAndCommitSQL(sqlStatement):
 
 def getSQLDataInDF(sqlQuery):
     server = "DESKTOP-HOD0O5L\\SQLEXPRESS" 
-    database = 'TestDB' 
-    #username = 'myusername' 
-    #password = 'mypassword' 
+    database = 'NBADB' 
+    #username = '' 
+    #password = '' 
     #conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';UID='+username+';PWD='+ password)
     conn = pyodbc.connect('DRIVER={SQL Server};SERVER='+server+';DATABASE='+database+';Trusted_Connection=yes;')
     df = pd.read_sql(sqlQuery, conn)

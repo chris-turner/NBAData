@@ -1,111 +1,5 @@
-select count(*) from NBA_game 
 
-SELECT *
-  FROM [TestDB].[dbo].[NBA_player_team]
-
-
-  select * from nba_player
-where playerFullName = 'Steven Adams'
---PlayerId = '1628980'
-
-select * from NBA_Team
-where TeamID = '1610612758'
-
-select * from NBA_game_play_by_play
-where GAME_ID = '0021900626'
-order by EVENTNUM
-
-
-select * from NBA_game g left join 
-(select * from NBA_game_play_by_play
-where (HOMEDESCRIPTION like '%jump ball%' or VISITORDESCRIPTION like '%jump ball%')
-and PCTIMESTRING = '12:00' and period = 1) s on s.GAME_ID = g.gameID
-where s.GAME_ID is null
-
-select * from NBA_game g left join
-() j on j.GAME_ID = g.gameID
-where j.GAME_ID is null
-
---
-select * from NBA_game_play_by_play
-where GAME_ID = '0021900095' order by EVENTNUM 
-
-/*
-0021900783  11:57
-0021900474
-0021900881
-0021900095
-0021900969
-*/
-
-select * from NBA_game_play_by_play
-where PLAYER1_ID = 100
-
-insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip)
-select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0
-from NBA_game_play_by_play pbp
-inner join NBA_game g on pbp.GAME_ID = g.gameID
-where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') 
-and PERIOD = 1 and CAST(PCTIMESTRING as time) <= '11:50'  
-and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and 
-(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null)
-and PLAYER3_NAME is not null and g.gameDate > '1/1/2020'
-
-insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip)
-select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0
-from NBA_game_play_by_play pbp
-inner join NBA_game g on pbp.GAME_ID = g.gameID
-where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') 
-and PERIOD = 1 and CAST(PCTIMESTRING as time) > '11:50'  
-and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and 
-(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null)
-and PLAYER3_NAME is not null and g.gameDate > '1/1/2020'
-
-insert into nba_jumpball (gameID, eventNum, player1ID, player2ID, winnerID, loserID, wasViolation, wasOpeningTip)
-select GAME_ID, EVENTNUM, PLAYER1_ID, PLAYER2_ID,null, null, 0, 0
-from NBA_game_play_by_play pbp
-inner join NBA_game g on pbp.GAME_ID = g.gameID
-where (HOMEDESCRIPTION  like '%Jump Ball%' or VISITORDESCRIPTION  like '%Jump Ball%') 
-and PERIOD != 1 
-and (HOMEDESCRIPTION not like '%violation%' or HOMEDESCRIPTION is null) and 
-(VISITORDESCRIPTION not like '%violation%'  or VISITORDESCRIPTION is null)
-and PLAYER3_NAME is not null and g.gameDate > '1/1/2020'
-
-
-
-update NBA_jumpball
-set winnerID = pbp.player1_id,
-loserID = pbp.PLAYER2_ID
-from
-NBA_jumpball j inner join
-NBA_game_play_by_play pbp on j.gameID = pbp.game_Id and j.eventnum = pbp.eventnum
-where pbp.player1_team_id = pbp.player3_team_id and loserID is null
-
-update NBA_jumpball
-set winnerID = pbp.player2_id,
-loserID = pbp.PLAYER1_ID
-from
-NBA_jumpball j inner join
-NBA_game_play_by_play pbp on j.gameID = pbp.game_Id and j.eventnum = pbp.eventnum
-where pbp.player2_team_id = pbp.player3_team_id and winnerID is null
-
-
-
-
-select distinct player1_id, player1_name, PLAYER1_TEAM_ID
-from NBA_game_play_by_play
-where PLAYER1_NAME is not null
-union
-select distinct player2_id, player2_name, PLAYER2_TEAM_ID
-from NBA_game_play_by_play
-where PLAYER2_NAME is not null
-union
-select distinct player3_id, player3_name, PLAYER3_TEAM_ID
-from NBA_game_play_by_play
-where PLAYER3_NAME is not null
-
-insert into NBA_player ([playerID], playerFullName)
-
+-- update NBA players with multiple teams
 update nba_player_team
 set newTeamDate = dates.gameDate
 from
@@ -125,22 +19,7 @@ inner join NBA_game_play_by_play pbp on y.gameID = pbp.game_Id and y.playerID = 
 on npt.playerID = dates.playerID and dates.PLAYER1_TEAM_ID = npt.teamID
 
 
-
-select distinct playerID from(
-select playerID, count(teamID) as c from nba_player_team 
-group by playerID
-having count(teamID) > 2)x
-
-UPDATE [NBA_game_play_by_play]
-  SET PLAYER1_TEAM_ID = SUBSTRING(PLAYER1_TEAM_ID, 0, (LEN(PLAYER1_TEAM_ID) - 1)),
-  PLAYER2_TEAM_ID = SUBSTRING(PLAYER2_TEAM_ID, 0, (LEN(PLAYER2_TEAM_ID) - 1)),
-  PLAYER3_TEAM_ID = SUBSTRING(PLAYER3_TEAM_ID, 0, (LEN(PLAYER3_TEAM_ID) - 1))
-
-group by GAME_ID
-having count(game_ID) > 1
-
-order by GAME_ID
-
+-- NBA Jumpball Stats
 select p.playerFullName, w.wins, l.losses, (cast(w.wins as decimal) / (cast(w.wins as decimal) + cast(l.losses as decimal))) as winpct
 from nba_player p
 inner join 
@@ -162,8 +41,322 @@ inner join
 (select loserid, count(*) as Losses from nba_jumpball j
 group by loserid)l on l.loserid = p.playerID
 order by winpct desc
+-- First made FG of the game
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g 
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE = 1
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+  inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+
+  -- Last made FG of the game
+  select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE = 1
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+  inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+
+    -- first FG attempt of game
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
 
 
+  -- last FG attempt of game
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+  
+    -- first shot attempt of game including free throws
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2, 3)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
 
-select count(*) from NBA_jumpball
-where wasOpeningTip = 1
+  -- last shot attempt of game including free throws
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2, 3)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+
+  -- first made shot of the game including freethrows
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,3) and (HOMEDESCRIPTION not like 'MISS %' or HOMEDESCRIPTION is null) and (VISITORDESCRIPTION not like 'MISS %' or VISITORDESCRIPTION is null)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+
+  -- Last made FG of the game
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,3) and (HOMEDESCRIPTION not like 'MISS %' or HOMEDESCRIPTION is null) and (VISITORDESCRIPTION not like 'MISS %' or VISITORDESCRIPTION is null)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+  order by gameDate
+
+-- First made FG of the game
+select Scorer, ScoringTeam, count(1) as NumberOfFirstFGMade
+from
+(select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g 
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE = 1
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+  inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfFirstFGMade desc
+
+  -- Last made FG of the game
+  select Scorer, ScoringTeam, count(1) as NumberOfLastFGMade
+from(
+  select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE = 1
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+  inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID
+ )x
+   group by scorer, ScoringTeam
+  order by NumberOfLastFGMade desc
+
+    -- first FG attempt of game
+	select Scorer, ScoringTeam, count(1) as NumberOfFirstFGAttempt
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfFirstFGAttempt desc
+
+
+  -- last FG attempt of game
+  select Scorer, ScoringTeam, count(1) as NumberOfLastFGAttempt
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfLastFGAttempt desc
+  
+    -- first shot attempt of game including free throws
+	 select Scorer, ScoringTeam, count(1) as NumberOfFirstShotAttempt
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2, 3)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfFirstShotAttempt desc
+
+  -- last shot attempt of game including free throws
+   select Scorer, ScoringTeam, count(1) as NumberOfLastShotAttempt
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,2, 3)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfLastShotAttempt desc
+
+  -- first made shot of the game including freethrows
+   select Scorer, ScoringTeam, count(1) as NumberOfFirstMadeShot
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, min(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,3) and (HOMEDESCRIPTION not like 'MISS %' or HOMEDESCRIPTION is null) and (VISITORDESCRIPTION not like 'MISS %' or VISITORDESCRIPTION is null)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfFirstMadeShot desc
+
+  -- Last made shot of the game including freethrows
+  select Scorer, ScoringTeam, count(1) as NumberOfLastMadeShot
+from(
+select distinct gg.gameDate,ht.TeamFullName as HomeTeam, at.TeamFullName as AwayTeam, g.PLAYER1_NAME as Scorer,
+CONCAT(g.PLAYER1_TEAM_CITY, ' ' ,g.PLAYER1_TEAM_NICKNAME) as ScoringTeam,
+CASE WHEN g.VISITORDESCRIPTION is null then g.HOMEDESCRIPTION
+ WHEN g.HOMEDESCRIPTION is null then g.VISITORDESCRIPTION
+END as ScoringDescription
+FROM [NBADB].[dbo].[NBA_game_play_by_play] g
+inner join 
+  (select game_id, max(eventnum) as eventnum FROM [NBADB].[dbo].[NBA_game_play_by_play]
+  where EVENTMSGTYPE in (1,3) and (HOMEDESCRIPTION not like 'MISS %' or HOMEDESCRIPTION is null) and (VISITORDESCRIPTION not like 'MISS %' or VISITORDESCRIPTION is null)
+  group by game_id)x on g.EVENTNUM = x.eventnum and g.GAME_ID = x.GAME_ID
+    inner join NBA_game gg on gg.gameID = x.GAME_ID
+  inner join NBA_Team at on gg.awayTeamID = at.TeamID
+   inner join NBA_Team ht on gg.homeTeamID = ht.TeamID)x
+   group by scorer, ScoringTeam
+  order by NumberOfLastMadeShot desc
+
+  
+
+  /*
+
+
+1�Field Goal Made
+
+2�Field Goal Missed
+
+3�Free Throw Attempt
+
+4�Rebound
+
+5�Turnover
+
+6�Foul
+
+7�Violation
+
+8�Substitution
+
+9�Timeout
+
+10�Jump Ball
+
+11�Ejection
+
+12�Start of Period
+
+13�End of Period
+
+
+EVENTMSGACTIONTYPE 1 - Jumpshot 2 - Lost ball Turnover 3 - ? 4 - Traveling Turnover / Off Foul 5 - Layup 7 - Dunk 10 - Free throw 1-1 11 - Free throw 1-2 12 - Free throw 2-2 40 - out of bounds 41 - Block/Steal 42 - Driving Layup 50 - Running Dunk 52 - Alley Oop Dunk 55 - Hook Shot 57 - Driving Hook Shot 58 - Turnaround hook shot 66 - Jump Bank Shot 71 - Finger Roll Layup 72 - Putback Layup 108 - Cutting Dunk Shot
+
+
+  */
