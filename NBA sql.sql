@@ -1,4 +1,3 @@
-
 -- update NBA players with multiple teams
 update nba_player_team
 set newTeamDate = dates.gameDate
