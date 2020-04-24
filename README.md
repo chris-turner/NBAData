@@ -13,3 +13,5 @@ Current statistics being pulled from the raw data:
 - Last shot attempt of game including free throws
 - First made shot of the game including free throws
 - Last made shot of the game including freethrows
+
+[Current Data from 2019-2020 NBA Season](https://docs.google.com/spreadsheets/d/1qyYzt8iCDcgQZlhhS1ic18CR4827KtuIe2upCivKM70/edit?usp=sharing)
